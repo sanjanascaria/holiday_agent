@@ -15,7 +15,7 @@ export async function GET(req:Request){
  if(!trip)return json({trips:list.results});
  if(!await access(trip,user.userId))return json({error:'This trip is private.'},403);
  const [msgs,board,people,revs]=await Promise.all([
- db.prepare('SELECT * FROM (SELECT * FROM messages WHERE trip=? ORDER BY created DESC LIMIT 300) ORDER BY created ASC').bind(trip).all(),
+ db.prepare('SELECT recent.*, quoted.body AS reply_body, quoted.name AS reply_name FROM (SELECT * FROM messages WHERE trip=? ORDER BY created DESC LIMIT 300) recent LEFT JOIN messages quoted ON quoted.id=recent.reply AND quoted.trip=recent.trip ORDER BY recent.created ASC').bind(trip).all(),
  db.prepare('SELECT * FROM items WHERE trip=? ORDER BY created DESC').bind(trip).all(),
  db.prepare('SELECT user,name FROM members WHERE trip=?').bind(trip).all(),
  db.prepare('SELECT id,item,after_version,name,created FROM revisions WHERE trip=? ORDER BY created DESC LIMIT 30').bind(trip).all()]);
@@ -40,6 +40,10 @@ export async function POST(req:Request){
  await db.prepare('INSERT OR IGNORE INTO members (trip,user,name) VALUES (?,?,?)').bind(trip.id,user.userId,name).run(); return json({trip:trip.id});
  }
  const trip=str(b.trip,100); if(!await access(trip,user.userId))return json({error:'This trip is private.'},403);
+ if(b.action==='delete'){
+ const own:any=await db.prepare('SELECT owner FROM trips WHERE id=?').bind(trip).first();if(own?.owner!==user.userId)return json({error:'Only the group creator can delete this chat.'},403);
+ await db.batch([db.prepare('DELETE FROM revisions WHERE trip=?').bind(trip),db.prepare('DELETE FROM items WHERE trip=?').bind(trip),db.prepare('DELETE FROM messages WHERE trip=?').bind(trip),db.prepare('DELETE FROM members WHERE trip=?').bind(trip),db.prepare('DELETE FROM trips WHERE id=?').bind(trip)]);return json({ok:true});
+ }
  if(b.action==='rename'){
  const title=typeof b.name==='string'?b.name.trim():'';if(!title||title.length>80)return json({error:'Use a group name between 1 and 80 characters.'},400);
  const result=await db.prepare('UPDATE trips SET name=? WHERE id=? AND name=?').bind(title,trip,str(b.previous,80)).run();
