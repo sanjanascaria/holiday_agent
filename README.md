@@ -7,6 +7,9 @@ A minimal group chat for friends planning a holiday. Create a chat, share an inv
 - One-button chat creation and browser-specific recent chats.
 - Invitations that grant membership; chat URLs alone do not grant access.
 - Editable group names and a participant list.
+- Creator-only group deletion with confirmation, removing messages, plans, membership and invite access.
+- Double-click or use Reply to send quoted replies.
+- Gigi mascot in the homepage and chat header; new `@Pickl` mentions trigger a small bubble-anchored head animation. Historical mentions do not replay, and reduced-motion preferences are respected.
 - Persistent messages, grouped by sender, refreshed every 2.5 seconds while the tab is visible.
 - Brand gradient, distinct incoming/outgoing bubbles, and highlighted `@Pickl` mentions.
 - Explicit `@Pickl` instructions are parsed into trip records. The chat shows Saved or Needs review based on those records, without bot replies.
@@ -38,7 +41,7 @@ Every chat read and mutation checks membership server-side. Anyone holding a val
 ## Validation
 
 ```sh
-node --experimental-strip-types --test app/extract.test.ts
+node --experimental-strip-types --test app/extract.test.ts app/mention-tracker.test.ts
 npx tsc --noEmit
 npm run build
 ```

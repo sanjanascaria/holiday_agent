@@ -47,3 +47,49 @@ article p{background:rgba(247,246,240,.17);color:#FFFFFF;text-shadow:0 1px 2px #
 /* Seamless chat edges and composer transition. */
 .chat{border-inline:0}
 .chat>form{border-top:0}
+
+.start-action{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}.gigi-mascot{display:block;width:180px;height:180px;object-fit:contain;user-select:none;pointer-events:none}@media(max-height:650px){.gigi-mascot{width:130px;height:130px}}
+
+.chat-options{position:relative;flex:none}.chat-options summary{list-style:none;cursor:pointer;padding:7px;border-radius:6px;display:flex}.chat-options summary::-webkit-details-marker{display:none}.chat-options summary:hover{background:#F7F6F017}.chat-options>div{position:absolute;right:0;top:100%;z-index:6;background:#33221F;border:1px solid #F7F6F02b;border-radius:9px;padding:6px;width:190px;box-shadow:0 8px 25px #0003}.chat-options button{display:flex;align-items:center;gap:8px;color:#FEB47B;background:none;border:0;padding:10px;font:inherit;font-size:12px;width:100%;text-align:left}.messages article{position:relative}.message-reply{font:inherit;font-size:10px;display:flex;align-items:center;gap:4px;color:#F7F6F0b3;background:none;border:0;padding:4px 2px;margin-top:3px;opacity:0}.messages article:hover .message-reply,.message-reply:focus-visible{opacity:1}.quoted-message{display:block;border-left:2px solid #E0DC80;background:#33221F55;padding:7px 10px;margin-bottom:9px;border-radius:3px;text-shadow:none;max-width:100%}.quoted-message strong{display:block;color:#E0DC80;font-size:10px;line-height:1.5}.quoted-message>span{display:block;font-size:12px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:380px}.chat .message-composer{display:block}.composer-row{display:flex;gap:12px;align-items:center}.reply-preview{display:flex;gap:10px;align-items:center;border-left:2px solid #E0DC80;padding:9px 12px;margin-bottom:12px;background:#33221F80;border-radius:4px}.reply-preview>div{flex:1;min-width:0}.reply-preview strong{display:block;font-size:11px;color:#E0DC80}.reply-preview span{display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:12px;color:#F7F6F0cc;margin-top:4px}.chat .reply-preview .cancel-reply{background:none;width:26px;height:26px;padding:3px;display:flex;align-items:center;justify-content:center}.delete-dialog{background:#33221F;color:white;border:1px solid #F7F6F02b;border-radius:14px;padding:26px;width:min(420px,calc(100vw - 32px));box-shadow:0 20px 80px #0006}.delete-dialog::backdrop{background:#160e0dcc;backdrop-filter:blur(3px)}.delete-dialog h2{font-size:18px;margin:0 0 14px}.delete-dialog p{font-size:13px;line-height:1.7;color:#F7F6F0cc}.delete-dialog>div{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}.delete-dialog button{border:1px solid #F7F6F02b;border-radius:7px;background:none;color:white;font:inherit;font-size:12px;padding:10px 13px}.delete-dialog .confirm-delete{background:#BD403F;border-color:#BD403F}@media(hover:none){.message-reply{opacity:1}}@media(max-width:420px){.quoted-message>span{max-width:220px}.composer-row{gap:8px}.chat header{gap:6px}.chat-options summary{padding:4px}}
+
+/* Compact message runs; reply actions do not reserve vertical space. */
+.messages article{margin-bottom:0}
+.messages article+article{margin-top:20px}
+.messages article.grouped-message{margin-top:5px}
+.messages article.grouped-message p{margin-top:0}
+.message-reply{position:absolute;top:0;right:0;left:auto;margin-top:0;padding:3px;z-index:2}
+.own-message .message-reply{right:auto;left:0}
+.capture-status{margin-top:3px}
+
+.chat header .brand-mark{position:relative;display:block;width:38px;height:38px;flex:none;overflow:hidden;border-radius:50%}.brand-mark img{position:absolute;max-width:none;width:82px;height:81px;left:-22px;top:-9px;object-fit:contain}
+
+/* Show Gigi's full silhouette in the header. */
+.chat header .brand-mark{width:42px;height:44px;overflow:visible;border-radius:0}
+.brand-mark img{position:static;display:block;width:42px;height:44px;object-fit:contain}
+
+.chat header .brand-mark{width:50px;height:52px}
+.brand-mark img{width:50px;height:52px}
+
+.conversation-area{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;isolation:isolate}
+.conversation-area>.messages{min-height:0}
+.penguin-peek-window{position:absolute;top:0;right:12px;width:100px;height:88px;overflow:hidden;pointer-events:none;z-index:4}
+.penguin-peek{position:absolute;bottom:0;left:5px;width:90px;height:78px;display:block;animation:penguin-peek 2.2s cubic-bezier(.22,.7,.3,1) both;will-change:transform}
+.penguin-head{position:relative;display:block;width:90px;height:78px;overflow:hidden;border-radius:48% 48% 38% 38%;filter:drop-shadow(0 3px 4px #33221F45)}
+.penguin-head img{position:absolute;max-width:none;width:180px;height:178px;left:-43px;top:-23px;object-fit:contain;user-select:none}
+@keyframes penguin-peek{0%,100%{transform:translateY(110%) rotate(5deg);opacity:0}18%{transform:translateY(-4px) rotate(-5deg);opacity:1}28%,70%{transform:translateY(0) rotate(-4deg);opacity:1}85%{opacity:1}}
+@media(max-width:420px){.penguin-peek-window{right:6px;width:85px;height:77px}.penguin-peek{transform-origin:bottom right;scale:.85}}
+@media(prefers-reduced-motion:reduce){.penguin-peek{animation:penguin-peek-fade 1.6s ease both;will-change:opacity}@keyframes penguin-peek-fade{0%,100%{opacity:0}20%,80%{opacity:1}}}
+
+/* Anchor the peek to the mentioned bubble, not the conversation frame. */
+.bubble-with-peek{position:relative;width:fit-content;max-width:min(85%,560px);padding-top:6px;isolation:isolate}
+.messages article .bubble-with-peek>p{position:relative;z-index:1;max-width:100%;margin-top:0}
+.messages article.grouped-message .bubble-with-peek{padding-top:0}
+.bubble-with-peek>.penguin-peek-window{top:auto;bottom:calc(100% - 9px);right:2px;z-index:0}
+.messages .own-message .bubble-with-peek{align-self:flex-end}
+@media(max-width:420px){.bubble-with-peek{max-width:92%}.bubble-with-peek>.penguin-peek-window{right:0}}
+
+/* Match the header mascot's visible size. */
+.bubble-with-peek>.penguin-peek-window{width:36px;height:34px;right:0}
+.bubble-with-peek .penguin-peek{left:1px;width:34px;height:30px;scale:1}
+.bubble-with-peek .penguin-head{width:34px;height:30px}
+.bubble-with-peek .penguin-head img{width:68px;height:67px;left:-16px;top:-9px}
