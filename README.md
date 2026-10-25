@@ -1,10 +1,9 @@
 # Pickl — holiday planning for you and your unorganised friends
 
-A group chat that turns holiday ideas into a shared trip plan. Start a chat, invite your friends, and tag `@Pickl` to save a place, decision or booking. No ChatGPT sign-in required.
+A group chat that turns holiday ideas into a shared trip plan. Start a chat, invite your friends, and tag `@Pickl` to save a place, decision or booking.
 
-## Screenshots
 
-| ![Group chat with quoted replies and saved Pickl mentions](docs/screenshots/01-group-chat.jpg) | ![Accommodation and everyday routines above the itinerary](docs/screenshots/02-trip-overview.jpg) |
+| ![Group chat with quoted replies and saved Pickl mentions](docs/screenshots/01-group-chat.jpg) ![Accommodation and everyday routines above the itinerary](docs/screenshots/02-trip-overview.jpg)
 
 ## How it works
 
