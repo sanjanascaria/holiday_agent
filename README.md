@@ -4,15 +4,7 @@ A group chat that turns holiday ideas into a shared trip plan. Start a chat, inv
 
 ## Screenshots
 
-Sample holiday data shown below.
-
-| Group chat | Trip overview |
-| --- | --- |
 | ![Group chat with quoted replies and saved Pickl mentions](docs/screenshots/01-group-chat.jpg) | ![Accommodation and everyday routines above the itinerary](docs/screenshots/02-trip-overview.jpg) |
-
-| Daily itinerary | Ideas and useful details |
-| --- | --- |
-| ![Activities grouped by day and time](docs/screenshots/03-daily-itinerary.jpg) | ![Food and activity options alongside packing notes](docs/screenshots/04-trip-ideas.jpg) |
 
 ## How it works
 
