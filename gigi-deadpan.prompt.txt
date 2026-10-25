@@ -1,0 +1,2 @@
+Generated with the built-in Image Generation tool from gigi.png.
+Prompt: Change only the mascot facial expression to half-lidded, unimpressed eyes looking straight at the viewer and a closed neutral beak. Preserve red/cream fur, identity, full body, pose and transparent background. No smile, anger, text or props.

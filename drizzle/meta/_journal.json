@@ -15,6 +15,20 @@
       "when": 1792801651142,
       "tag": "0001_high_peter_quill",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792888326867,
+      "tag": "0002_charming_jack_flag",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792889349822,
+      "tag": "0003_steep_namora",
+      "breakpoints": true
     }
   ]
 }

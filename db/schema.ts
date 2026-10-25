@@ -4,7 +4,14 @@ export const trips = sqliteTable('trips', {
 });
 export const members = sqliteTable('members', {trip: text('trip').notNull().references(()=>trips.id), user: text('user').notNull(), name: text('name').notNull()}, t=>[primaryKey({columns:[t.trip,t.user]})]);
 export const messages = sqliteTable('messages', {id:text('id').primaryKey(), trip:text('trip').notNull().references(()=>trips.id), user:text('user').notNull(), name:text('name').notNull(), body:text('body').notNull(), reply:text('reply'), created:integer('created').notNull()});
-export const items = sqliteTable('items', {id:text('id').primaryKey(), trip:text('trip').notNull().references(()=>trips.id), title:text('title').notNull(), category:text('category').notNull(), status:text('status').notNull(), notes:text('notes').notNull(), url:text('url').notNull(), source:text('source'), name:text('name').notNull(), review:integer('review').notNull().default(0), version:integer('version').notNull().default(1), created:integer('created').notNull()});
+export const items = sqliteTable('items', {id:text('id').primaryKey(), trip:text('trip').notNull().references(()=>trips.id), title:text('title').notNull(), category:text('category').notNull(), status:text('status').notNull(), notes:text('notes').notNull(), url:text('url').notNull(), source:text('source'), name:text('name').notNull(), review:integer('review').notNull().default(0), version:integer('version').notNull().default(1), created:integer('created').notNull(),day:text('day').notNull().default(''),time:text('time').notNull().default('')});
 export const revisions = sqliteTable('revisions', {id:text('id').primaryKey(), trip:text('trip').notNull(), item:text('item').notNull(), before:text('before').notNull(), afterVersion:integer('after_version').notNull(), name:text('name').notNull(), created:integer('created').notNull()});
 
 export const sessions = sqliteTable('sessions', { hash:text('hash').primaryKey(), user:text('user').notNull(), name:text('name').notNull(), expires:integer('expires').notNull() });
+
+export const captureJobs = sqliteTable('capture_jobs', {
+ message:text('message').primaryKey(),trip:text('trip').notNull(),state:text('state').notNull(),error:text('error').notNull().default(''),
+ attempts:integer('attempts').notNull().default(0),run:text('run').notNull().default(''),resultIds:text('result_ids').notNull().default('[]'),
+ created:integer('created').notNull(),updated:integer('updated').notNull(),
+});
+export const aiUsage = sqliteTable('ai_usage', {scope:text('scope').primaryKey(),count:integer('count').notNull()});

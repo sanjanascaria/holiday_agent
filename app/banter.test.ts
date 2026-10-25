@@ -1,0 +1,6 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {BanterTracker} from './banter.ts';
+test('old skipped messages never replay on opening or switching chats',()=>{const t=new BanterTracker();const jobs=[{message:'old',state:'skipped'}];assert.equal(t.observe('a',jobs,0),null);assert.equal(t.observe('a',jobs,100),null);assert.equal(t.observe('b',jobs,200),null);});
+test('a new banter result reacts once, while plans and failures do not',()=>{const t=new BanterTracker();t.observe('a',[],0);assert.equal(t.observe('a',[{message:'x',state:'processing'}],1),null);assert.equal(t.observe('a',[{message:'x',state:'skipped'}],2)?.caption,'Saved absolutely nothing.');assert.equal(t.observe('a',[{message:'x',state:'skipped'},{message:'y',state:'complete'},{message:'z',state:'failed'}],20000),null);});
+test('bursts are suppressed rather than replayed later, and captions rotate',()=>{const t=new BanterTracker();t.observe('a',[],0);t.observe('a',[{message:'a',state:'skipped'}],1);assert.equal(t.observe('a',[{message:'b',state:'skipped'}],200),null);assert.equal(t.observe('a',[{message:'b',state:'skipped'}],16000),null);assert.equal(t.observe('a',[{message:'c',state:'skipped'}],16001)?.caption,'This is not an itinerary.');});
