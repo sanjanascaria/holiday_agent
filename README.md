@@ -1,4 +1,4 @@
-# Pickl
+# Pickl - The Holiday Planning to help you and your unorganised friends out
 
 A shared trip chat with a quiet organiser and an editable trip board.
 
