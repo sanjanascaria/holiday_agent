@@ -29,3 +29,33 @@ test('provider failures have safe, distinguishable codes',async()=>{
  await assert.rejects(()=>interpret(input,'test',undefined,async()=>Response.json({error:{code:'rate_limit_exceeded'}},{status:429})),/rate_limit/);
  await assert.rejects(()=>interpret(input,'test',undefined,async()=>{throw Error('private upstream detail');}),/unavailable/);
 });
+const stayInput:Instruction={body:'@Pickl find hotels in Lisbon',plans:[],trip:{name:'Trip',destination:'Lisbon',dates:''}};
+const stay={...plan,research:{pageAccess:'read',budgetFit:'not_requested'},title:'Test Hotel',category:'Stay',status:'Booked',url:'https://hotel.com/rooms',notes:'Rooftop terrace.'};
+function researched(changes:unknown,sources=[{url:stay.url,title:'Hotel'}]){return Response.json({status:'completed',output:[{type:'web_search_call',status:'completed',action:{type:'search',sources}},{type:'message',content:[{type:'output_text',text:JSON.stringify({changes})}]}]});}
+test('stay searches use bounded web tools, cited URLs and server-enforced Option status',async()=>{
+ const result=await interpret(stayInput,'test',undefined,async(_url,opts)=>{const b=JSON.parse(String(opts?.body));assert.equal(b.tools[0].type,'web_search');assert.equal(b.max_tool_calls,3);assert(b.include.includes('web_search_call.action.sources'));return researched([stay]);});
+ assert.equal(result[0].status,'Option');assert.equal(JSON.parse(result[0].web!).sources[0].url,stay.url);
+});
+test('uncited properties and non-stay web changes are rejected; empty searches fail visibly',async()=>{
+ await assert.rejects(()=>interpret(stayInput,'test',undefined,async()=>researched([stay],[])),/invalid_output/);
+ await assert.rejects(()=>interpret(stayInput,'test',undefined,async()=>researched([{...stay,category:'Food'}])),/invalid_output/);
+ await assert.rejects(()=>interpret(stayInput,'test',undefined,async()=>researched([])),/no_results/);
+});
+test('blocked links can be saved without claiming to have read their details',async()=>{
+ const url='https://www.airbnb.com/rooms/123';
+ const result=await interpret({...stayInput,body:'@Pickl save this Airbnb '+url},'test',undefined,async()=>researched([{...stay,title:'Airbnb stay',status:'Option',notes:'',url,research:{pageAccess:'blocked',budgetFit:'not_requested'}}],[]));
+ assert.equal(result[0].url,url);assert.equal(JSON.parse(result[0].web!).pageRead,false);
+});
+test('private links are rejected before any billable request',async()=>{
+ let called=false;await assert.rejects(()=>interpret({...stayInput,body:'@Pickl read this hotel http://127.0.0.1/'},'test',undefined,async()=>{called=true;return researched([]);}),/invalid_output/);assert.equal(called,false);
+});
+test('known over-budget properties and generic collection pages are discarded',async()=>{
+ await assert.rejects(()=>interpret(stayInput,'test',undefined,async()=>researched([{...stay,research:{pageAccess:'read',budgetFit:'over'}}])),/no_results/);
+ const generic='https://www.booking.com/district/pt/lisbon/alfama.html';
+ await assert.rejects(()=>interpret(stayInput,'test',undefined,async()=>researched([{...stay,url:generic}],[{url:generic,title:'Alfama hotels'}])),/no_results/);
+});
+test('an inaccessible page stays link-only even when its URL is in search sources',async()=>{
+ const url='https://www.airbnb.com/rooms/123';
+ const result=await interpret({...stayInput,body:'@Pickl save this Airbnb '+url},'test',undefined,async()=>researched([{...stay,title:'Invented villa',notes:'Invented pool',url,research:{pageAccess:'blocked',budgetFit:'not_requested'}}],[{url,title:'404'}]));
+ assert.equal(result[0].title,'Airbnb stay');assert.equal(result[0].notes,'');assert.equal(JSON.parse(result[0].web!).pageRead,false);
+});

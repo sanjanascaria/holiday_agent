@@ -89,14 +89,14 @@ export async function POST(req:Request){
  if(old.version!==b.version)return json({error:'Someone changed this item. Close it and reopen the latest version.'},409);
  const rev=id(); await db.batch([
  db.prepare('INSERT INTO revisions (id,trip,item,before,after_version,name,created) SELECT ?,?,?,?,?,?,? WHERE EXISTS (SELECT 1 FROM items WHERE id=? AND version=?)').bind(rev,trip,iid,JSON.stringify(old),old.version+1,name,Date.now(),iid,old.version),
- db.prepare('UPDATE items SET title=?, category=?, status=?, notes=?, url=?, day=?, time=?, review=0, version=version+1 WHERE id=? AND version=?').bind(title,category,status,notes,url,day===null?(old.day||''):day,time===null?(old.time||''):time,iid,old.version)]);
+ db.prepare('UPDATE items SET title=?, category=?, status=?, notes=?, url=?, day=?, time=?, web=?, review=0, version=version+1 WHERE id=? AND version=?').bind(title,category,status,notes,url,day===null?(old.day||''):day,time===null?(old.time||''):time,url===old.url?(old.web||''):'',iid,old.version)]);
  const applied=await db.prepare('SELECT id FROM revisions WHERE id=?').bind(rev).first();if(!applied)return json({error:'Someone changed this item. Reopen the latest version.'},409);
  }else await db.prepare('INSERT INTO items (id,trip,title,category,status,notes,url,day,time,source,name,review,version,created) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id(),trip,title,category,status,notes,url,day||'',time||'',null,name,0,1,Date.now()).run();
  return json({ok:true});
  }
  if(b.action==='undo'){
  const rev:any=await db.prepare('SELECT * FROM revisions WHERE id=? AND trip=?').bind(str(b.revision,100),trip).first();if(!rev)return json({error:'Change not found.'},404);
- const old=JSON.parse(rev.before);const result=await db.prepare('UPDATE items SET title=?,category=?,status=?,notes=?,url=?,day=?,time=?,review=?,version=version+1 WHERE id=? AND trip=? AND version=?').bind(old.title,old.category,old.status,old.notes,old.url,old.day||'',old.time||'',old.review,rev.item,trip,rev.after_version).run();
+ const old=JSON.parse(rev.before);const result=await db.prepare('UPDATE items SET title=?,category=?,status=?,notes=?,url=?,day=?,time=?,web=?,review=?,version=version+1 WHERE id=? AND trip=? AND version=?').bind(old.title,old.category,old.status,old.notes,old.url,old.day||'',old.time||'',old.web||'',old.review,rev.item,trip,rev.after_version).run();
  if(!result.meta.changes)return json({error:'A newer change exists. Edit the item instead.'},409);return json({ok:true});
  }
  return json({error:'Unknown action.'},400);
