@@ -1,4 +1,4 @@
-export type TripItem={id:string;title:string;category:string;status:string;notes:string;url:string;source:string|null;name:string;review:number;version:number;day?:string;time?:string};
+export type TripItem={id:string;title:string;category:string;status:string;notes:string;url:string;source:string|null;name:string;review:number;version:number;day?:string;time?:string;web?:string};
 const weekdays=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
 export function dayKey(day:string){

@@ -1,6 +1,7 @@
 /** Live semantic regression check. Uses an existing key without displaying it. */
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
+import {propertyPageUrl} from '../app/stay-web.ts';
 import {interpret,type Instruction,type SavedPlan} from '../app/intelligence.ts';
 let key=process.env.OPENAI_API_KEY||'';
 if(!key){const raw=readFileSync(new URL('../.dev.vars',import.meta.url),'utf8');key=(raw.match(/^\s*OPENAI_API_KEY\s*=\s*(.+)$/m)?.[1]||'').trim().replace(/^["']|["']$/g,'');}
@@ -8,6 +9,9 @@ assert(key,'Configure OPENAI_API_KEY before running this live evaluation.');
 const trip={name:'Istanbul holiday',destination:'Istanbul',dates:''};
 const tea:SavedPlan={id:'tea-a',title:'Tea tasting near Hagia Sophia',category:'Food',status:'Option',notes:'A tea tasting idea near Hagia Sophia.',url:'',source:null,version:1,review:0,day:'Day 1',time:''};
 const cases:{name:string;input:Instruction;check:(p:Awaited<ReturnType<typeof interpret>>)=>void}[]=[
+ {name:'web search finds source-backed stay Options',input:{body:'@Pickl find 2 hotels in Lisbon for 4 adults, 12–15 June 2027, budget €200 per night. Prefer Alfama or nearby. Only suggest places; do not book.',trip,plans:[]},check:p=>{assert(p.length>0&&p.length<=3);for(const c of p){assert.equal(c.category,'Stay');assert.equal(c.status,'Option');assert.equal(c.review,false);assert(c.url.startsWith('https://'));assert(propertyPageUrl(c.url));const w=JSON.parse(c.web||'{}');assert.equal(w.mode,'search');assert(w.sources.some((s:any)=>s.url===c.url));}console.log(JSON.stringify(p));}},
+ {name:'web link extracts an actual hotel page',input:{body:'@Pickl save this hotel as an option: https://www.memmoalfama.com/',trip,plans:[]},check:p=>{assert.equal(p.length,1);assert.equal(p[0].category,'Stay');assert.equal(p[0].status,'Option');const w=JSON.parse(p[0].web||'{}');assert.equal(w.mode,'link');assert(w.sources.length);console.log(JSON.stringify(p));}},
+ {name:'web link blocked Airbnb keeps link without invented facts',input:{body:'@Pickl save this Airbnb https://www.airbnb.com/rooms/1234567890123456789',trip,plans:[]},check:p=>{assert.equal(p.length,1);assert.equal(p[0].status,'Option');assert.equal(p[0].url,'https://www.airbnb.com/rooms/1234567890123456789');assert.equal(JSON.parse(p[0].web||'{}').pageRead,false);console.log(JSON.stringify(p));}},
  {name:'tone commentary omitted from mixed instruction',input:{body:'@Pickl u fatass, save tea tasting near Hagia Sophia on Day 1. Budget €25.',trip,plans:[]},check:p=>{assert.equal(p.length,1);assert.equal(p[0].review,false);assert.equal(p[0].day,'Day 1');assert.match(p[0].title+' '+p[0].notes,/25/);assert.doesNotMatch(JSON.stringify(p),/fatass|playful|aggressive|tone|insult|teasing|banter/i);}},
  {name:'tone commentary never turns pure banter into a plan',input:{body:'@Pickl u fatass',trip,plans:[]},check:p=>assert.deepEqual(p,[])},
  {name:'concise notes omit planning gaps',input:{body:'@Pickl Tea tasting near Hagia Sophia on Day 1. No shop, time, price or reservation details decided yet.',trip,plans:[]},check:p=>{assert.equal(p.length,1);assert.equal(p[0].review,false);assert.equal(p[0].day,'Day 1');assert.doesNotMatch(p[0].notes,/unknown|unspecified|not specified|not decided|undecided|TBD|missing|confirm|check availability|no (?:shop|time|price|reservation)/i);}},

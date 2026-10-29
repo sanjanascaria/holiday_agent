@@ -134,3 +134,8 @@ article p{background:rgba(247,246,240,.17);color:#FFFFFF;text-shadow:0 1px 2px #
 .banter-peek .penguin-head{transform:none}
 
 .trip-basics{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start}.trip-basics:has(>:only-child){grid-template-columns:minmax(0,1fr)}.trip-basics>.stay-callout{margin:0}.daily-callout{padding:22px 18px;border:1px solid #E0DC8033;border-radius:13px;background:#E0DC8009;min-width:0}.daily-callout .plan-section-title{margin-bottom:7px}.daily-callout .plan-section-title h3 svg{color:#E0DC80}.daily-scope{margin:0 0 8px;font-size:10px;line-height:1.6;color:#E0DC8099}.daily-callout .plan-row.itinerary-event{grid-template-columns:48px minmax(0,1fr);gap:8px}.daily-callout .plan-actions{grid-column:2;justify-self:end}.daily-callout .plan-status{font-size:8px}.daily-callout .plan-row-title h4{font-size:12px}.daily-callout .plan-notes{font-size:11px}@media(max-width:680px){.trip-basics{grid-template-columns:minmax(0,1fr)}.daily-callout{padding:18px}.daily-callout .plan-row.itinerary-event{grid-template-columns:60px minmax(0,1fr)}}
+
+/* Keep the composer quiet on focus; keyboard controls retain their focus indicators. */
+.chat .message-composer textarea:focus,.chat .message-composer textarea:focus-visible{outline:none;box-shadow:none;border-color:#FEB47B66}
+
+.stay-web-source{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;margin-top:12px;font-size:10px;line-height:1.6;color:#F7F6F099}.stay-web-source>span{color:#FEB47B}.stay-web-source a{display:inline-flex;gap:4px;align-items:center;color:#E0DC80;text-decoration:underline;text-underline-offset:3px}.stay-web-source small{flex-basis:100%;font-size:10px;color:#F7F6F080}

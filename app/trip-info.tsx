@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { X, Check, ExternalLink, Pencil, ArrowLeft, CircleHelp, Archive, Plus, BedDouble, CalendarDays, Plane, Sparkles, NotebookPen, Clock } from 'lucide-react';
+import { useDialogBackdrop } from './dismiss';
+import { parseStayWeb } from './stay-web';
 import { conciseNotes } from './plan-notes';
 import { categories, statuses } from './extract';
 import { organizeTrip, scheduleFor, dayKey, type TripItem } from './trip-plan';
@@ -11,7 +13,11 @@ function Status({item}:{item:TripItem}){
  return <span className={'plan-status '+(item.review?'plan-review':item.status.toLowerCase())}>{item.review?'Needs review':item.status==='Option'?'Option':item.status}</span>;
 }
 function Actions({item,busy,onEdit,onArchive}:Controls&{item:TripItem}){
- return <div className="plan-actions">{item.url&&/^https?:\/\//i.test(item.url)&&<a href={item.url} target="_blank" rel="noopener noreferrer" aria-label={'Open link for '+item.title} title="Open link"><ExternalLink size={14}/></a>}<button disabled={busy} onClick={()=>onEdit(item)} aria-label={(item.review?'Review ':'Edit ')+item.title} title={item.review?'Review details':'Edit plan'}><Pencil size={14}/></button>{item.status!=='Archived'&&<button disabled={busy} onClick={()=>onArchive(item)} aria-label={'Archive '+item.title} title="Archive plan"><Archive size={14}/></button>}</div>;
+ return <div className="plan-actions">{item.url&&!parseStayWeb(item.web)?.sources.some(s=>s.url===item.url)&&/^https?:\/\//i.test(item.url)&&<a href={item.url} target="_blank" rel="noopener noreferrer" aria-label={'Open link for '+item.title} title="Open link"><ExternalLink size={14}/></a>}<button disabled={busy} onClick={()=>onEdit(item)} aria-label={(item.review?'Review ':'Edit ')+item.title} title={item.review?'Review details':'Edit plan'}><Pencil size={14}/></button>{item.status!=='Archived'&&<button disabled={busy} onClick={()=>onArchive(item)} aria-label={'Archive '+item.title} title="Archive plan"><Archive size={14}/></button>}</div>;
+}
+function WebSource({item}:{item:TripItem}){
+ const web=parseStayWeb(item.web);if(!web)return null;
+ return <div className="stay-web-source"><span>{web.mode==='search'?'Web suggestion':web.pageRead?'Web details':'Link saved'}</span>{web.sources.map(s=><a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" title={s.title}>{new URL(s.url).hostname.replace(/^www\./,'')}<ExternalLink size={10}/></a>)}<small>Checked {new Date(web.checkedAt).toLocaleDateString(undefined,{month:'short',day:'numeric'})} · {web.pageRead?(web.budgetFit==='unknown'?'Budget unverified; live availability not checked':'Indicative prices; live availability not checked'):'Page details unavailable'}</small></div>;
 }
 function Notes({text}:{text:string}){
  text=conciseNotes(text);
@@ -22,7 +28,7 @@ function Notes({text}:{text:string}){
 function PlanRow({item,time,showCategory=false,...controls}:Controls&{item:TripItem;time?:string;showCategory?:boolean}){
  return <article className={'plan-row'+(time!==undefined?' itinerary-event':'')}>
   {time!==undefined&&<div className="event-time">{time}</div>}
-  <div className="plan-row-content"><div className="plan-row-title"><h4>{item.title}</h4><Status item={item}/></div>{showCategory&&<span className="plan-category">{item.category}</span>}{time===undefined&&(item.day||item.time)&&<span className="plan-schedule-tag"><Clock size={11}/>{[item.day?dayKey(item.day).label:"",item.time].filter(Boolean).join(" · ")}</span>}<Notes text={item.notes}/></div>
+  <div className="plan-row-content"><div className="plan-row-title"><h4>{item.title}</h4><Status item={item}/></div>{showCategory&&<span className="plan-category">{item.category}</span>}{time===undefined&&(item.day||item.time)&&<span className="plan-schedule-tag"><Clock size={11}/>{[item.day?dayKey(item.day).label:"",item.time].filter(Boolean).join(" · ")}</span>}<Notes text={item.notes}/><WebSource item={item}/></div>
   <Actions item={item} {...controls}/>
  </article>;
 }
@@ -33,6 +39,7 @@ function SectionTitle({icon:Icon,children,aside}:{icon:typeof CalendarDays;child
 export default function TripInfo({open,onClose,tripId,tripName,items,focusId,onSave}:{open:boolean;onClose:()=>void;tripId:string;tripName:string;items:TripItem[];focusId:string|null;onSave:(payload:unknown)=>Promise<void>}){
  const dialog=useRef<HTMLDialogElement>(null);
  const [editing,setEditing]=useState<TripItem|null>(null),[filter,setFilter]=useState('Trip plan'),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ const backdrop=useDialogBackdrop(onClose,busy);
  useEffect(()=>{if(open){setEditing(focusId?items.find(i=>i.id===focusId)||null:null);setFilter('Trip plan');setError('');setNotice('');dialog.current?.showModal();}else dialog.current?.close();},[open]);
  function edit(item:TripItem){const schedule=scheduleFor(item);setEditing({...item,day:schedule.day,time:schedule.time});setError('');setNotice('');}
  function add(){edit({id:'',title:'',category:'Other',status:'Option',notes:'',url:'',source:null,name:'you',review:0,version:0,day:'',time:''});}
@@ -47,7 +54,7 @@ export default function TripInfo({open,onClose,tripId,tripName,items,focusId,onS
  const active=items.filter(i=>i.status!=='Archived'),reviews=active.filter(i=>i.review);
  const plan=organizeTrip(items),controls={busy,onEdit:edit,onArchive:archive};
  const filtered=filter==='Archived'?items.filter(i=>i.status==='Archived'):reviews;
- return <dialog ref={dialog} className="trip-info-dialog trip-plan-dialog" aria-labelledby="trip-info-title" onCancel={e=>{if(busy)e.preventDefault();else onClose();}} onClose={()=>{if(!busy)onClose();}}>
+ return <dialog {...backdrop} ref={dialog} className="trip-info-dialog trip-plan-dialog" aria-labelledby="trip-info-title" onCancel={e=>{if(busy)e.preventDefault();else onClose();}} onClose={()=>{if(!busy)onClose();}}>
   <div className="trip-info-heading"><div><h2 id="trip-info-title">Trip info</h2><p>{tripName}</p></div><button type="button" className="info-icon" aria-label="Close trip info" disabled={busy} onClick={onClose}><X size={20}/></button></div>
   {editing?<>
    <button className="info-back" disabled={busy} onClick={()=>{setEditing(null);setError('');}}><ArrowLeft size={14}/> Back to trip plan</button>
@@ -71,7 +78,7 @@ export default function TripInfo({open,onClose,tripId,tripName,items,focusId,onS
      {active.length===0&&<div className="info-empty"><CalendarDays size={28}/><h3>No saved plans yet</h3><p>Tag @Pickl in the chat to save a plan.</p></div>}
      {reviews.length>0&&<button className="plan-review-banner" onClick={()=>setFilter('Needs review')}><CircleHelp size={16}/><span>{reviews.length} {reviews.length===1?'detail needs':'details need'} a second look</span><span aria-hidden="true">→</span></button>}
      {(plan.stays.length>0||plan.everyDay.length>0)&&<section className="trip-basics" aria-label="Trip-wide information">
-     {plan.stays.length>0&&<section className="stay-callout" aria-label="Where to stay"><SectionTitle icon={BedDouble}>Where to stay</SectionTitle>{plan.stays.map((item,index)=><article className={'stay-place'+(index===0?' primary-stay':'')} key={item.id}><div className="stay-title"><h4>{item.title}</h4><Status item={item}/></div><Notes text={item.notes}/>{(item.day||item.time)&&<div className="stay-arrival"><Clock size={12}/><span>Check-in: {[item.day?dayKey(item.day).label:"",item.time].filter(Boolean).join(' · ')}</span></div>}<div className="stay-footer"><Actions item={item} {...controls}/></div></article>)}</section>}
+     {plan.stays.length>0&&<section className="stay-callout" aria-label="Where to stay"><SectionTitle icon={BedDouble}>Where to stay</SectionTitle>{plan.stays.map((item,index)=><article className={'stay-place'+(index===0?' primary-stay':'')} key={item.id}><div className="stay-title"><h4>{item.title}</h4><Status item={item}/></div><Notes text={item.notes}/><WebSource item={item}/>{(item.day||item.time)&&<div className="stay-arrival"><Clock size={12}/><span>Check-in: {[item.day?dayKey(item.day).label:"",item.time].filter(Boolean).join(' · ')}</span></div>}<div className="stay-footer"><Actions item={item} {...controls}/></div></article>)}</section>}
      {plan.everyDay.length>0&&<section className="daily-callout" aria-label="Every day"><SectionTitle icon={Clock}>Every day</SectionTitle>{plan.everyDay.map(item=><PlanRow key={item.id} item={item} time={item.time||undefined} {...controls}/>)}</section>}
      </section>}
      {plan.days.length>0&&<section className="daily-itinerary" aria-label="Daily itinerary"><SectionTitle icon={CalendarDays} aside={`${plan.days.length} ${plan.days.length===1?'day':'days'}`}>Itinerary</SectionTitle>{plan.days.map(day=><section className="itinerary-day" key={day.key} aria-label={day.label}><h4 className="itinerary-day-label"><span aria-hidden="true"/>{day.label}</h4><div className="day-events">{day.items.map(({item,time})=><PlanRow key={item.id} item={item} time={time} {...controls}/>)}</div></section>)}</section>}

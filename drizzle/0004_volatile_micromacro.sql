@@ -1,0 +1,1 @@
+ALTER TABLE `items` ADD `web` text DEFAULT '' NOT NULL;
